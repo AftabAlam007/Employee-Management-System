@@ -1,10 +1,10 @@
-<!-- 🚀 WORKBRIDGE — PROFESSIONAL README (UPDATED) -->
+<!-- 🚀 WORKBRIDGE — CLEAN & FOCUSED VERSION -->
 
 <p align="center">
-  <img src="https://readme-typing-svg.herokuapp.com?size=32&duration=3500&color=00F7FF&center=true&vCenter=true&width=900&lines=🚀+Md+Aftab+Alam;WORKBRIDGE+HRMS+SYSTEM;Java+Full+Stack+Developer;SpringBoot+%7C+React+%7C+MySQL;Scalable.+Secure.+Production+Ready" />
+  <img src="https://readme-typing-svg.herokuapp.com?size=30&duration=3500&color=00F7FF&center=true&vCenter=true&width=800&lines=🚀+Md+Aftab+Alam;WORKBRIDGE+HRMS+SYSTEM;Employee+Management+System;SpringBoot+%7C+React+%7C+MySQL;Smart.+Secure.+Scalable." />
 </p>
 
-<h1 align="center">🚀 WorkBridge — HR Management System</h1>
+<h1 align="center">🚀 WORKBRIDGE — Employee Management System</h1>
 
 <h3 align="center">
   👨‍💻 Developed by <b>Md Aftab Alam</b> | Java Full Stack Developer
@@ -13,30 +13,29 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Open%20to%20Work-YES-00F7FF?style=for-the-badge"/>
   <img src="https://img.shields.io/badge/Full%20Stack-Java%20Developer-FF00FF?style=for-the-badge"/>
-  <img src="https://img.shields.io/badge/Focus-Scalable%20Systems-39FF14?style=for-the-badge"/>
+  <img src="https://img.shields.io/badge/Focus-Employee%20Management-39FF14?style=for-the-badge"/>
 </p>
 
 ---
 
 ## 🌟 Overview
 
-**WorkBridge** is a **production-ready HR Management System (HRMS)** designed to automate HR workflows and improve organizational efficiency.
+**WorkBridge** is a scalable **Employee Management System** designed to manage employee data, attendance, payroll, and performance efficiently.
 
 🔹 Built using modern full-stack architecture
-🔹 Focused on scalability, security, and clean code
-🔹 Designed with real-world business use cases
+🔹 Focused on real-world use cases
+🔹 Clean, secure, and scalable design
 
 ---
 
 ## 🚀 Key Features
 
-✔ Employee Management System
+✔ Employee Profile Management
+✔ Attendance & Leave Tracking
 ✔ Payroll & Salary Processing
-✔ Attendance & Leave Workflow
-✔ Recruitment & Onboarding
-✔ Performance Reviews
-✔ Role-Based Dashboards
-✔ HR Analytics
+✔ Role-Based Access System
+✔ Performance Monitoring
+✔ Secure Authentication
 
 ---
 
@@ -61,16 +60,15 @@
 
 ## 🔐 Authentication & Role-Based Access
 
-Secure login with role-based redirection:
+Secure login with role-based access:
 
 * 🛡 Admin Dashboard
 * 👨‍💼 Employee Dashboard
-* 👩‍💻 HR Dashboard
 * 💰 Finance Dashboard
 
 ✔ JWT-based authentication
 ✔ Protected API routes
-✔ Role-level permissions
+✔ Role-based permissions
 
 ---
 
@@ -78,22 +76,16 @@ Secure login with role-based redirection:
 
 ### 🛡 Admin Panel
 
-* Full system access
-* Manage employees & roles
-* Monitor analytics
+* Manage employees
+* Assign roles & permissions
+* Access system data
 
 ### 👨‍💼 Employee Panel
 
-* Profile & details
-* Leave requests
-* Payslip download
-* Performance tracking
-
-### 👩‍💻 HR Module
-
-* Recruitment pipeline
-* Employee onboarding
-* Performance evaluation
+* View profile
+* Apply leave
+* Download payslips
+* Track performance
 
 ### 💰 Finance Module
 
@@ -105,20 +97,23 @@ Secure login with role-based redirection:
 
 ## 📊 Impact & Highlights (Recruiter Focus)
 
-✔ Built scalable RESTful architecture
-✔ Implemented secure authentication (JWT)
-✔ Optimized database queries (MySQL)
+✔ Built scalable REST APIs
+✔ Implemented secure JWT authentication
+✔ Optimized MySQL queries
 ✔ Clean modular backend design
-✔ Responsive UI with modern UX
+✔ Responsive UI with Tailwind CSS
 
 ---
 
 ## 🎨 UI / UX
 
-✨ Smooth transitions
-✨ Clean dashboard UI
-✨ Responsive layout
-✨ User-friendly navigation
+✨ Smooth UI transitions
+✨ Clean dashboard design
+✨ Fully responsive layout
+
+<p align="center">
+  <img src="https://readme-typing-svg.herokuapp.com?size=22&duration=3000&color=00F7FF&center=true&width=600&lines=Fast+Performance.;Clean+UI.;Responsive+Design.;User+Friendly.;" />
+</p>
 
 ---
 
@@ -126,7 +121,7 @@ Secure login with role-based redirection:
 
 ### 🟦 Frontend
 
-```bash
+```bash id="n1nqv9"
 cd frontend
 npm install
 npm run dev
@@ -134,7 +129,7 @@ npm run dev
 
 ### 🟩 Backend
 
-```bash
+```bash id="1nkm7q"
 cd backend
 mvn clean install
 mvn spring-boot:run
@@ -144,7 +139,7 @@ mvn spring-boot:run
 
 ## 📂 Project Structure
 
-```
+```id="5z7e3c"
 WorkBridge/
 ├── frontend (React + Tailwind)
 ├── backend (Spring Boot)
@@ -174,15 +169,13 @@ WorkBridge/
 
 ## 🧠 Why This Project Matters
 
-This project demonstrates:
-
+✔ Real-world employee management system
 ✔ Full-stack development expertise
-✔ Real-world business logic implementation
-✔ Scalable system design
+✔ Secure and scalable architecture
 ✔ Production-level coding practices
 
 ---
 
 <h3 align="center">
-  ⚡ "Building scalable systems, not just applications."
+  ⚡ "Focused systems build better impact."
 </h3>
