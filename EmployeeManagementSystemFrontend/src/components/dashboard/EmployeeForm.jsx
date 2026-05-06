@@ -137,24 +137,53 @@ const DEV_PREFILLED_STATE = {
 const initialState = import.meta.env.DEV ? DEV_PREFILLED_STATE : BLANK_FORM_STATE;
 
 const EmployeeForm = ({ employee, onSuccess, onClose }) => {
-    const [formData, setFormData] = useState(initialState);
+    const [formData, setFormData] = useState(() =>
+        JSON.parse(JSON.stringify(initialState))
+    );
     const [error, setError] = useState('');
     const isEditMode = !!employee;
 
     useEffect(() => {
         if (isEditMode) {
-            // Deep copy and ensure nested structures are not null
             const sanitizedEmployee = JSON.parse(JSON.stringify(employee));
             setFormData({
                 ...initialState,
                 ...sanitizedEmployee,
-                user: sanitizedEmployee.user || initialState.user,
-                personalDetails: { ...initialState.personalDetails, ...sanitizedEmployee.personalDetails },
-                professionalDetails: { ...initialState.professionalDetails, ...sanitizedEmployee.professionalDetails },
-                finance: { ...initialState.finance, ...sanitizedEmployee.finance },
+                user: {
+                    ...initialState.user,
+                    ...(sanitizedEmployee.user || {}),
+                },
+                personalDetails: {
+                    ...initialState.personalDetails,
+                    ...(sanitizedEmployee.personalDetails || {}),
+                    currentAddress: {
+                        ...initialState.personalDetails.currentAddress,
+                        ...(sanitizedEmployee.personalDetails?.currentAddress || {}),
+                    },
+                    permanentAddress: {
+                        ...initialState.personalDetails.permanentAddress,
+                        ...(sanitizedEmployee.personalDetails?.permanentAddress || {}),
+                    },
+                },
+                professionalDetails: {
+                    ...initialState.professionalDetails,
+                    ...(sanitizedEmployee.professionalDetails || {}),
+                    officeAddress: {
+                        ...initialState.professionalDetails.officeAddress,
+                        ...(sanitizedEmployee.professionalDetails?.officeAddress || {}),
+                    },
+                },
+                finance: {
+                    ...(sanitizedEmployee.finance || {}),
+                    ...initialState.finance,
+                    bankDetails: {
+                        ...(sanitizedEmployee.finance?.bankDetails || {}),
+                        ...initialState.finance.bankDetails,
+                    },
+                },
             });
         } else {
-            setFormData(initialState);
+            setFormData(JSON.parse(JSON.stringify(initialState)));
         }
     }, [employee, isEditMode]);
 
@@ -165,38 +194,162 @@ const EmployeeForm = ({ employee, onSuccess, onClose }) => {
         setFormData(prev => {
             const newFormData = JSON.parse(JSON.stringify(prev));
 
-            // Special handling for the projects array
-            if (nameParts[0] === 'projects' && !newFormData.projects[nameParts[1]]) {
-                newFormData.projects[nameParts[1]] = {};
-            }
-
             let current = newFormData;
             for (let i = 0; i < nameParts.length - 1; i++) {
-                current = current[nameParts[i]];
+                const key = nameParts[i];
+                const nextKey = nameParts[i + 1];
+                const nextIsIndex = !isNaN(nextKey);
+
+                if (nextIsIndex) {
+                    if (!Array.isArray(current[key])) current[key] = [];
+                    const idx = parseInt(nextKey, 10);
+                    if (!current[key][idx]) current[key][idx] = {};
+                    current = current[key];
+                } else if (!isNaN(key)) {
+                    const idx = parseInt(key, 10);
+                    if (!current[idx]) current[idx] = {};
+                    current = current[idx];
+                } else {
+                    if (!current[key] || typeof current[key] !== 'object') {
+                        current[key] = {};
+                    }
+                    current = current[key];
+                }
             }
-            current[nameParts[nameParts.length - 1]] = value;
+            const lastKey = nameParts[nameParts.length - 1];
+            if (!isNaN(lastKey)) {
+                current[parseInt(lastKey, 10)] = value;
+            } else {
+                current[lastKey] = value;
+            }
             return newFormData;
         });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError('');
-        try {
-            if (isEditMode) {
-                await updateEmployee(employee.id, formData);
-                toast.success('Employee updated successfully!');
-            } else {
-                await createEmployee(formData);
-                toast.success('Employee created successfully!');
-            }
-            onSuccess(); // Notify parent component (AdminDashboardPage)
-        } catch (err) {
-            const errorMsg = err.response?.data?.message || `Failed to ${isEditMode ? 'update' : 'create'} employee.`;
-            setError(errorMsg);
-            console.error(err);
+  const validatePayload = (data) => {
+    const errors = [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    if (!data.user?.email?.trim()) errors.push('User email is required');
+    if (!data.user?.password) errors.push('Password is required');
+    if (data.user?.password && data.user.password.length < 6) errors.push('Password must be at least 6 characters');
+    if (!data.user?.role) errors.push('User role is required');
+
+    if (!data.managerName?.trim()) errors.push('Manager name is required');
+
+    if (!data.personalDetails?.fullName?.trim()) errors.push('Full name is required');
+    if (!data.personalDetails?.dateOfBirth) errors.push('Date of birth is required');
+    else {
+      const dob = new Date(data.personalDetails.dateOfBirth);
+      if (dob >= today) errors.push('Date of birth must be in the past');
+    }
+    if (!data.personalDetails?.gender) errors.push('Gender is required');
+    if (!data.personalDetails?.mobile) errors.push('Mobile is required');
+    else if (!/^\d{10}$/.test(data.personalDetails.mobile)) errors.push('Mobile must be 10 digits');
+    if (!data.personalDetails?.personalEmail?.trim()) errors.push('Personal email is required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.personalDetails.personalEmail)) errors.push('Invalid personal email format');
+    if (!data.personalDetails?.emergencyContactName?.trim()) errors.push('Emergency contact name is required');
+    if (!data.personalDetails?.emergencyContactMobile) errors.push('Emergency contact mobile is required');
+    else if (!/^\d{10}$/.test(data.personalDetails.emergencyContactMobile)) errors.push('Emergency contact mobile must be 10 digits');
+
+    if (!data.personalDetails?.currentAddress?.addressLine1?.trim()) errors.push('Current address line 1 is required');
+    if (!data.personalDetails?.currentAddress?.city?.trim()) errors.push('Current city is required');
+    if (!data.personalDetails?.currentAddress?.pinCode) errors.push('Current pin code is required');
+    else if (!/^\d{6}$/.test(data.personalDetails.currentAddress.pinCode)) errors.push('Current pin code must be 6 digits');
+
+    if (!data.personalDetails?.permanentAddress?.addressLine1?.trim()) errors.push('Permanent address line 1 is required');
+    if (!data.personalDetails?.permanentAddress?.city?.trim()) errors.push('Permanent city is required');
+    if (!data.personalDetails?.permanentAddress?.pinCode) errors.push('Permanent pin code is required');
+    else if (!/^\d{6}$/.test(data.personalDetails.permanentAddress.pinCode)) errors.push('Permanent pin code must be 6 digits');
+
+    if (!data.professionalDetails?.employmentCode?.trim()) errors.push('Employment code is required');
+    else if (!/^\d{6}$/.test(data.professionalDetails.employmentCode)) errors.push('Employment code must be 6 digits');
+    if (!data.professionalDetails?.companyEmail?.trim()) errors.push('Company email is required');
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.professionalDetails.companyEmail)) errors.push('Invalid company email format');
+    if (!data.professionalDetails?.officePhone?.trim()) errors.push('Office phone is required');
+    else if (!/^\d{8,12}$/.test(data.professionalDetails.officePhone)) errors.push('Office phone must be 8-12 digits');
+    if (!data.professionalDetails?.reportingManagerEmployeeCode?.trim()) errors.push('Reporting manager code is required');
+    if (!data.professionalDetails?.hrName?.trim()) errors.push('HR name is required');
+    if (!data.professionalDetails?.dateOfJoining) errors.push('Date of joining is required');
+    else {
+      const doj = new Date(data.professionalDetails.dateOfJoining);
+      if (doj > today) errors.push('Date of joining cannot be in the future');
+    }
+
+    if (!data.professionalDetails?.officeAddress?.addressLine1?.trim()) errors.push('Office address line 1 is required');
+    if (!data.professionalDetails?.officeAddress?.city?.trim()) errors.push('Office city is required');
+    if (!data.professionalDetails?.officeAddress?.pinCode) errors.push('Office pin code is required');
+    else if (!/^\d{6}$/.test(data.professionalDetails.officeAddress.pinCode)) errors.push('Office pin code must be 6 digits');
+
+    if (!data.finance?.panCard?.trim()) errors.push('PAN card is required');
+    else if (!/^[A-Z]{5}\d{4}[A-Z]$/.test(data.finance.panCard)) errors.push('Invalid PAN card format');
+    if (!data.finance?.aadharCard?.trim()) errors.push('Aadhar card is required');
+    else if (!/^\d{12}$/.test(data.finance.aadharCard)) errors.push('Aadhar card must be 12 digits');
+    if (!data.finance?.ctcBreakup?.trim()) errors.push('CTC breakup is required');
+    if (!data.finance?.bankDetails?.bankName?.trim()) errors.push('Bank name is required');
+    if (!data.finance?.bankDetails?.branch?.trim()) errors.push('Bank branch is required');
+    if (!data.finance?.bankDetails?.ifscCode?.trim()) errors.push('IFSC code is required');
+    else if (!/^[A-Z]{4}[0-9][A-Z0-9]{6}$/i.test(data.finance.bankDetails.ifscCode)) errors.push('Invalid IFSC code format (must be 11 characters: 4 letters + 1 digit + 6 alphanumeric)');
+
+    if (data.projects && data.projects.length > 0) {
+      data.projects.forEach((proj, idx) => {
+        if (!proj.projectCode?.trim()) errors.push(`Project ${idx + 1}: code is required`);
+        if (!proj.clientOrProjectName?.trim()) errors.push(`Project ${idx + 1}: client/project name is required`);
+        if (!proj.startDate) errors.push(`Project ${idx + 1}: start date is required`);
+        if (!proj.endDate) errors.push(`Project ${idx + 1}: end date is required`);
+        if (proj.startDate && proj.endDate) {
+          const start = new Date(proj.startDate);
+          const end = new Date(proj.endDate);
+          if (end < start) errors.push(`Project ${idx + 1}: end date must be after start date`);
+          if (end > today) errors.push(`Project ${idx + 1}: end date cannot be in the future`);
         }
-    };
+      });
+    }
+
+    return errors;
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    try {
+      console.log('=== FINAL PAYLOAD:', formData);
+      console.log('=== REQUEST PAYLOAD ===');
+      console.log(JSON.stringify(formData, null, 2));
+
+      const validationErrors = validatePayload(formData);
+      if (validationErrors.length > 0) {
+        console.error('=== CLIENT-SIDE VALIDATION ERRORS ===', validationErrors);
+        setError('Please fix the following: ' + validationErrors.join('; '));
+        return;
+      }
+
+      if (isEditMode) {
+        await updateEmployee(employee.id, formData);
+        toast.success('Employee updated successfully!');
+      } else {
+        await createEmployee(formData);
+        toast.success('Employee created successfully!');
+      }
+      onSuccess();
+    } catch (err) {
+      console.error('=== BACKEND ERROR ===', err.response?.data);
+      console.error('=== BACKEND VALIDATION ERRORS ===', err.response?.data?.data);
+
+      const errorData = err.response?.data;
+      const errorMsg = errorData?.message || `Failed to ${isEditMode ? 'update' : 'create'} employee.`;
+
+      if (errorData?.data && Object.keys(errorData.data).length > 0) {
+        const fieldErrors = Object.entries(errorData.data)
+          .map(([field, msg]) => `${field}: ${msg}`)
+          .join('; ');
+        setError(`${errorMsg} - ${fieldErrors}`);
+      } else {
+        setError(errorMsg);
+      }
+    }
+  };
 
     return (
         <form onSubmit={handleSubmit} className="space-y-8 max-h-[80vh] overflow-y-auto p-2">
