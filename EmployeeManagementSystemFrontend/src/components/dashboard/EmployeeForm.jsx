@@ -129,7 +129,7 @@ const DEV_PREFILLED_STATE = {
         bankDetails: {
             bankName: 'Bank of America',
             branch: 'New York',
-            ifscCode: 'BOFA0NY',
+            ifscCode: 'BOFA0N12345',
         },
     },
 };
